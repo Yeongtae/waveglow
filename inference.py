@@ -29,6 +29,7 @@ import numpy as np
 from scipy.io.wavfile import write
 import torch
 from mel2samp import files_to_list, MAX_WAV_VALUE
+import time
 
 def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
     mel_files = files_to_list(mel_files)
@@ -41,6 +42,7 @@ def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
             k.float()
 
     for i, file_path in enumerate(mel_files):
+        stime = time.time()
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         mel = torch.load(file_path)
         mel = torch.autograd.Variable(mel.cuda())
@@ -53,7 +55,8 @@ def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
         audio_path = os.path.join(
             output_dir, "{}_synthesis.wav".format(file_name))
         write(audio_path, sampling_rate, audio)
-        print(audio_path)
+        #print(audio_path)
+        print("{}: {} seconds ".format(audio_path, time.time() - stime))
 
 if __name__ == "__main__":
     import argparse
