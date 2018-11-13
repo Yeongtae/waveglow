@@ -56,7 +56,8 @@ def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
             output_dir, "{}_synthesis.wav".format(file_name))
         write(audio_path, sampling_rate, audio)
         #print(audio_path)
-        print("{}: {} seconds ".format(audio_path, time.time() - stime))
+        len_audio = len(audio)/22050.
+        print("{}: audio length {:.2f} computing time {:.2f} seconds ".format(audio_path, len_audio, time.time() - stime))
 
 if __name__ == "__main__":
     import argparse
