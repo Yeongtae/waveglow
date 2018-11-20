@@ -48,8 +48,10 @@ def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
         mel = torch.autograd.Variable(mel.cuda())
         mel = torch.unsqueeze(mel, 0)
         mel = mel.half() if is_fp16 else mel
+        stime2 = time.time()
         with torch.no_grad():
             audio = MAX_WAV_VALUE*waveglow.infer(mel, sigma=sigma)[0]
+        inf_time = time.time() - stime2
         audio = audio.cpu().numpy()
         audio = audio.astype('int16')
         audio_path = os.path.join(
@@ -57,7 +59,7 @@ def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
         write(audio_path, sampling_rate, audio)
         #print(audio_path)
         len_audio = len(audio)/22050.
-        print("{}: (audio length {:.2f} seconds), (computing time {:.2f} seconds) ".format(audio_path, len_audio, time.time() - stime))
+        print("{}: (audio length {:.2f} sec), (computing time {:.2f} sec), (inference time: {:.2f} sec) ".format(audio_path, len_audio, time.time() - stime, inf_time))
 
 if __name__ == "__main__":
     import argparse
