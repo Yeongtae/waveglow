@@ -59,7 +59,7 @@ def main(mel_files, waveglow_path, sigma, output_dir, sampling_rate, is_fp16):
         write(audio_path, sampling_rate, audio)
         #print(audio_path)
         len_audio = len(audio)/22050.
-        print("{}: (audio length {:.2f} sec), (computing time {:.2f} sec), (inference time: {:.2f} sec) ".format(audio_path, len_audio, time.time() - stime, inf_time))
+        print("{}: (audio length {:.2f} sec), (total computing time {:.2f} sec), (inference time: {:.2f} sec) ".format(audio_path, len_audio, time.time() - stime, inf_time))
 
 if __name__ == "__main__":
     import argparse
