@@ -48,9 +48,12 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
             k.float()
 
     text = "There's a way to measure the acute emotional intelligence that has never gone out of style."
+    start = time.perf_counter()
     sequence = np.array(text_to_sequence(text, cleaner))[None, :]
     sequence = torch.autograd.Variable(
         torch.from_numpy(sequence)).cuda().long()
+    duration = time.perf_counter() - start
+    print("Tacotron2 inference time {:.2f}s/it".format(duration))
 
     mel_outputs, mel_outputs_postnet, _, alignments = model.inference(sequence)
     # save figure
@@ -67,9 +70,10 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
     with torch.no_grad():
         audio = MAX_WAV_VALUE * waveglow.infer(mel, sigma=sigma)[0]
     duration = time.perf_counter() - start
-    print("inference time {:.2f}s/it".format(duration))
+    print("Waveglow inference time {:.2f}s/it".format(duration))
 
     audio = audio.data.cpu().numpy()
+    print(audio.max(), audio.min(), audio.shape)
     write('test.wav', hparams.sampling_rate, audio)
 
 if __name__ == "__main__":
