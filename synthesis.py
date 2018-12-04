@@ -47,7 +47,6 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
         for k in waveglow.convinv:
             k.float()
 
-
     text = "There's a way to measure the acute emotional intelligence that has never gone out of style."
     sequence = np.array(text_to_sequence(text, cleaner))[None, :]
     sequence = torch.autograd.Variable(
@@ -59,7 +58,7 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
                mel_outputs_postnet.data.cpu().numpy()[0],
                alignments.data.cpu().numpy()[0].T))
 
-    mel = mel_outputs_postnet[-1, :, :]()
+    mel = mel_outputs_postnet[-1, :, :]
     mel = torch.autograd.Variable(mel.cuda())
     mel = mel.half() if is_fp16 else mel
     mel = torch.unsqueeze(mel, 0)
