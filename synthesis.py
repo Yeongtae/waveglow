@@ -68,12 +68,12 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
     #mel = mel.data
     start = time.perf_counter()
     with torch.no_grad():
-        #audio = MAX_WAV_VALUE * waveglow.infer(mel, sigma=sigma)[0]
-        audio = waveglow.infer(mel, sigma=sigma)[0]
+        audio = MAX_WAV_VALUE * waveglow.infer(mel, sigma=sigma)[0]
+        #audio = waveglow.infer(mel, sigma=sigma)[0]
     duration = time.perf_counter() - start
     print("Waveglow inference time {:.2f}s/it".format(duration))
 
-    audio = audio.data.cpu().numpy()
+    audio = audio.data.cpu().numpy().astype('int16')
     print(audio.max(), audio.min(), audio.shape, audio.dtype)
     write('test.wav', hparams.sampling_rate, audio)
 
