@@ -10,16 +10,17 @@ import sys
 import time
 import numpy as np
 from scipy.io.wavfile import write
+sys.path.insert(0, 'tacotron2')
 
 import numpy as np
 import torch
 
-from tacotron2.hparams import create_hparams
-from tacotron2.model import Tacotron2
-from tacotron2.layers import TacotronSTFT
-from tacotron2.audio_processing import griffin_lim
-from tacotron2.train import load_model
-from tacotron2.text import text_to_sequence
+from hparams import create_hparams
+from model import Tacotron2
+from layers import TacotronSTFT
+from audio_processing import griffin_lim
+from train import load_model
+from text import text_to_sequence
 from mel2samp import MAX_WAV_VALUE
 
 def plot_data(data, figsize=(16, 4)):
@@ -85,4 +86,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    run(args.sigma, args.taco_cp_path, args.wg_cp_path, args.cleaner, args.is_fp16)
+    run(args.sigma, args.taco_cp_path, args.wg_cp_path, [args.cleaner], args.is_fp16)
