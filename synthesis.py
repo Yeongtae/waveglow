@@ -52,10 +52,10 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
     sequence = np.array(text_to_sequence(text, cleaner))[None, :]
     sequence = torch.autograd.Variable(
         torch.from_numpy(sequence)).cuda().long()
+    mel_outputs, mel_outputs_postnet, _, alignments = model.inference(sequence)
     duration = time.perf_counter() - start
     print("Tacotron2 inference time {:.2f}s/it".format(duration))
 
-    mel_outputs, mel_outputs_postnet, _, alignments = model.inference(sequence)
     # save figure
     plot_data((mel_outputs.data.cpu().numpy()[0],
                mel_outputs_postnet.data.cpu().numpy()[0],
@@ -63,17 +63,18 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
 
     mel = mel_outputs_postnet[-1, :, :]
     mel = torch.autograd.Variable(mel.cuda())
-    mel = mel.half() if is_fp16 else mel
     mel = torch.unsqueeze(mel, 0)
-    mel = mel.data
+    mel = mel.half() if is_fp16 else mel
+    #mel = mel.data
     start = time.perf_counter()
     with torch.no_grad():
-        audio = MAX_WAV_VALUE * waveglow.infer(mel, sigma=sigma)[0]
+        #audio = MAX_WAV_VALUE * waveglow.infer(mel, sigma=sigma)[0]
+        audio = waveglow.infer(mel, sigma=sigma)[0]
     duration = time.perf_counter() - start
     print("Waveglow inference time {:.2f}s/it".format(duration))
 
     audio = audio.data.cpu().numpy()
-    print(audio.max(), audio.min(), audio.shape)
+    print(audio.max(), audio.min(), audio.shape, audio.dtype)
     write('test.wav', hparams.sampling_rate, audio)
 
 if __name__ == "__main__":
