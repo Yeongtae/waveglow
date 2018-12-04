@@ -1,0 +1,88 @@
+import warnings
+warnings.filterwarnings('ignore')
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pylab as plt
+
+import os
+import sys
+import time
+import numpy as np
+from scipy.io.wavfile import write
+
+import numpy as np
+import torch
+
+from tacotron2.hparams import create_hparams
+from tacotron2.model import Tacotron2
+from tacotron2.layers import TacotronSTFT
+from tacotron2.audio_processing import griffin_lim
+from tacotron2.train import load_model
+from tacotron2.text import text_to_sequence
+from mel2samp import MAX_WAV_VALUE
+
+def plot_data(data, figsize=(16, 4)):
+    fig, axes = plt.subplots(1, len(data), figsize=figsize)
+    for i in range(len(data)):
+        axes[i].imshow(data[i], aspect='auto', origin='bottom',
+                        interpolation='none')
+    plt.savefig('test.png')
+
+def run(sigma, taco_cp_path = "", wg_cp_path ="", text = '', cleaner=['english_cleaners'], is_fp16=True):
+    hparams = create_hparams()
+    hparams.sampling_rate = 22050
+
+    model = load_model(hparams)
+    model.load_state_dict(torch.load(taco_cp_path)['state_dict'])
+    _ = model.eval()
+    waveglow = torch.load(wg_cp_path)['model']
+    waveglow.remove_weightnorm(waveglow)
+    waveglow.cuda().eval()
+    if is_fp16:
+        waveglow.half()
+        for k in waveglow.convinv:
+            k.float()
+
+    if text is '':
+        text = "There's a way to measure the acute emotional intelligence that has never gone out of style."
+    sequence = np.array(text_to_sequence(text, cleaner))[None, :]
+    sequence = torch.autograd.Variable(
+        torch.from_numpy(sequence)).cuda().long()
+
+    mel_outputs, mel_outputs_postnet, _, alignments = model.inference(sequence)
+    # save figure
+    plot_data((mel_outputs.data.cpu().numpy()[0],
+               mel_outputs_postnet.data.cpu().numpy()[0],
+               alignments.data.cpu().numpy()[0].T))
+
+    mel = mel_outputs_postnet[-1, :, :]()
+    mel = torch.autograd.Variable(mel.cuda())
+    mel = mel.half() if is_fp16 else mel
+    mel = torch.unsqueeze(mel, 0)
+    mel = mel.data
+    start = time.perf_counter()
+    with torch.no_grad():
+        audio = MAX_WAV_VALUE * waveglow.infer(mel, sigma=sigma)[0]
+    duration = time.perf_counter() - start
+    print("inference time {:.2f}s/it".format(duration))
+
+    audio = audio.data.cpu().numpy()
+    write('test.wav', hparams.sampling_rate, audio)
+
+if __name__ == "__main__":
+    import argparse
+
+    #sigma , taco_cp_path = "tacotron2/tacotron2_statedict.pt", wg_cp_path ="waveglow_old.pt", text = '', cleaner=['english_cleaners'], is_fp16=True
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', "--taco_cp_path",
+                        help='Path to tacotron decoder checkpoint with model', required=True)
+    parser.add_argument('-w', '--wg_cp_path',
+                        help='Path to waveglow decoder checkpoint with model', required=True)
+    parser.add_argument('-c', "--cleaner")
+    parser.add_argument("-s", "--sigma", default=1.0, type=float)
+    parser.add_argument("--is_fp16", action="store_true")
+
+    args = parser.parse_args()
+
+    run(args.sigma, args.taco_cp_path, args.wg_cp_path, args.cleaner, args.is_fp16)
