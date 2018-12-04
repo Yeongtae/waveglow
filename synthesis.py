@@ -30,7 +30,7 @@ def plot_data(data, figsize=(16, 4)):
                         interpolation='none')
     plt.savefig('test.png')
 
-def run(sigma, taco_cp_path = "", wg_cp_path ="", text = '', cleaner=['english_cleaners'], is_fp16=True):
+def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], is_fp16=True):
     hparams = create_hparams()
     hparams.sampling_rate = 22050
     # set 80 if u use korean_cleaners. set 149 if u use english_cleaners
@@ -47,8 +47,8 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", text = '', cleaner=['english_c
         for k in waveglow.convinv:
             k.float()
 
-    if text is '':
-        text = "There's a way to measure the acute emotional intelligence that has never gone out of style."
+
+    text = "There's a way to measure the acute emotional intelligence that has never gone out of style."
     sequence = np.array(text_to_sequence(text, cleaner))[None, :]
     sequence = torch.autograd.Variable(
         torch.from_numpy(sequence)).cuda().long()
