@@ -4,10 +4,11 @@
         "epochs": 100000,
         "learning_rate": 1e-4,
         "sigma": 1.0,
-        "iters_per_checkpoint": 2000,
+        "iters_per_checkpoint": 10000,
         "batch_size": 3,
         "seed": 1234,
-        "checkpoint_path": ""
+        "checkpoint_path": "waveglow_old.pt",
+        "warm_start": true
     },
     "data_config": {
         "training_files":"train_files.txt",

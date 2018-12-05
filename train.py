@@ -59,8 +59,15 @@ def save_checkpoint(model, optimizer, learning_rate, iteration, filepath):
                 'optimizer': optimizer.state_dict(),
                 'learning_rate': learning_rate}, filepath)
 
+def warm_start_model(checkpoint_path, model):
+    assert os.path.isfile(checkpoint_path)
+    print("Warm starting model from checkpoint '{}'".format(checkpoint_path))
+    checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
+    model.load_state_dict(checkpoint_dict['state_dict'])
+    return model
+
 def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
-          sigma, iters_per_checkpoint, batch_size, seed, checkpoint_path):
+          sigma, iters_per_checkpoint, batch_size, seed, checkpoint_path, warm_start):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     #=====START: ADDED FOR DISTRIBUTED======
@@ -81,9 +88,12 @@ def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
     # Load checkpoint if one exists
     iteration = 0
     if checkpoint_path != "":
-        model, optimizer, iteration = load_checkpoint(checkpoint_path, model,
+        if warm_start:
+            model = warm_start_model(checkpoint_path, model)
+        else:
+            model, optimizer, iteration = load_checkpoint(checkpoint_path, model,
                                                       optimizer)
-        iteration += 1  # next iteration is iteration + 1
+            iteration += 1  # next iteration is iteration + 1
 
     trainset = Mel2Samp(**data_config)
     # =====START: ADDED FOR DISTRIBUTED======
