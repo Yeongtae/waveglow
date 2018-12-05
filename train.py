@@ -59,11 +59,10 @@ def save_checkpoint(model, optimizer, learning_rate, iteration, filepath):
                 'optimizer': optimizer.state_dict(),
                 'learning_rate': learning_rate}, filepath)
 
-def warm_start_model(checkpoint_path, model):
+def warm_start_model(checkpoint_path):
     assert os.path.isfile(checkpoint_path)
     print("Warm starting model from checkpoint '{}'".format(checkpoint_path))
-    checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
-    model.load_state_dict(checkpoint_dict['state_dict'])
+    model = torch.load(checkpoint_path)['model']
     return model
 
 def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
@@ -89,7 +88,7 @@ def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
     iteration = 0
     if checkpoint_path != "":
         if warm_start:
-            model = warm_start_model(checkpoint_path, model)
+            model = warm_start_model(checkpoint_path)
         else:
             model, optimizer, iteration = load_checkpoint(checkpoint_path, model,
                                                       optimizer)
