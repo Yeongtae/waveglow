@@ -80,6 +80,9 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
 if __name__ == "__main__":
     import argparse
 
+    ## how to run this script?
+    # python synthesis.py -t=tacotron2/model_LJ/checkpoint_15500 -w=checkpoints/waveglow_162000 -c=english_cleaners --is_fp16
+
     #sigma , taco_cp_path = "tacotron2/tacotron2_statedict.pt", wg_cp_path ="waveglow_old.pt", text = '', cleaner=['english_cleaners'], is_fp16=True
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', "--taco_cp_path",
@@ -93,3 +96,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run(args.sigma, args.taco_cp_path, args.wg_cp_path, [args.cleaner], args.is_fp16)
+
