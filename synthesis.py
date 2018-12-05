@@ -47,7 +47,7 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
         for k in waveglow.convinv:
             k.float()
 
-    text = "There's a way to measure the acute emotional intelligence that has never gone out of style."
+    text = "Scientists at the CERN laboratory say they have discovered a new particle."
     start = time.perf_counter()
     sequence = np.array(text_to_sequence(text, cleaner))[None, :]
     sequence = torch.autograd.Variable(
