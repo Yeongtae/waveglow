@@ -63,8 +63,8 @@ def warm_start_model(checkpoint_path, model): # in progress
     assert os.path.isfile(checkpoint_path)
     print("Warm starting model from checkpoint '{}'".format(checkpoint_path))
     checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
-    print(checkpoint_dict)
-    model.load_state_dict(checkpoint_dict['state_dict'])
+    model_for_loading = checkpoint_dict['model']
+    model.load_state_dict(model_for_loading.state_dict())
     return model
 
 def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
