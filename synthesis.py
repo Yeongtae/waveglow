@@ -34,7 +34,7 @@ def run(sigma, taco_cp_path = "", wg_cp_path ="", cleaner=['english_cleaners'], 
     hparams = create_hparams()
     hparams.sampling_rate = 22050
     # set 80 if u use korean_cleaners. set 149 if u use english_cleaners
-    hparams.n_symbols = 80 if cleaner is ['korean_cleaners'] else 149
+    hparams.n_symbols = 80 if cleaner[0] is 'korean_cleaners' else 149
 
     model = load_model(hparams)
     model.load_state_dict(torch.load(taco_cp_path)['state_dict'])
