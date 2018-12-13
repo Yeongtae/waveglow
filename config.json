@@ -12,6 +12,7 @@
     },
     "data_config": {
         "training_files":"train_files.txt",
+        "load_mel_from_disk": false,
         "segment_length": 16000,
         "sampling_rate": 22050,
         "filter_length": 1024,
