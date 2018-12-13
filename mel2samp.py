@@ -123,8 +123,8 @@ class Mel2Samp(torch.utils.data.Dataset):
             max_mel_length = int(self.segment_length/self.hop_length)
 
             if audio.size(0) >= self.segment_length:
-                max_audio_start = audio.size(0) - audio.size(0)%self.hop_length - self.segment_length # audio.size(0)%self.hop_length is remainder
-                audio_start = random.randrange(0, max_audio_start, self.hop_length)
+                max_audio_start = int(audio.size(0)/self.hop_length) # audio.size(0)%self.hop_length is remainder
+                audio_start = random.randint(0, max_audio_start)*self.hop_length
                 mel_start = int(audio_start/self.hop_length)
                 audio = audio[audio_start : audio_start + self.segment_length]
                 mel = np.load(filename[1])[:,mel_start:mel_start + max_mel_length]
