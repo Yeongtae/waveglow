@@ -29,6 +29,17 @@ import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 
+
+@torch.jit.script
+def fused_add_tanh_sigmoid_multiply(input_a, input_b, n_channels):
+    n_channels_int = n_channels[0]
+    in_act = input_a+input_b
+    t_act = torch.tanh(in_act[:, :n_channels_int, :])
+    s_act = torch.sigmoid(in_act[:, n_channels_int:, :])
+    acts = t_act * s_act
+    return acts
+
+
 class WaveGlowLoss(torch.nn.Module):
     def __init__(self, sigma=1.0):
         super(WaveGlowLoss, self).__init__()
@@ -104,8 +115,7 @@ class WN(torch.nn.Module):
         self.n_layers = n_layers
         self.n_channels = n_channels
         self.in_layers = torch.nn.ModuleList()
-        self.res_layers = torch.nn.ModuleList()
-        self.skip_layers = torch.nn.ModuleList()
+        self.res_skip_layers = torch.nn.ModuleList()
         self.cond_layers = torch.nn.ModuleList()
 
         start = torch.nn.Conv1d(n_in_channels, n_channels, 1)
@@ -133,34 +143,34 @@ class WN(torch.nn.Module):
 
             # last one is not necessary
             if i < n_layers - 1:
-                res_layer = torch.nn.Conv1d(n_channels, n_channels, 1)
-                res_layer = torch.nn.utils.weight_norm(res_layer, name='weight')
-                self.res_layers.append(res_layer)
-
-            skip_layer = torch.nn.Conv1d(n_channels, n_channels, 1)
-            skip_layer = torch.nn.utils.weight_norm(skip_layer, name='weight')
-            self.skip_layers.append(skip_layer)
+                res_skip_channels = 2*n_channels
+            else:
+                res_skip_channels = n_channels
+            res_skip_layer = torch.nn.Conv1d(n_channels, res_skip_channels, 1)
+            res_skip_layer = torch.nn.utils.weight_norm(res_skip_layer, name='weight')
+            self.res_skip_layers.append(res_skip_layer)
 
     def forward(self, forward_input):
         audio, spect = forward_input
         audio = self.start(audio)
 
         for i in range(self.n_layers):
-            in_act = self.in_layers[i](audio)
-            in_act = in_act + self.cond_layers[i](spect)
+            acts = fused_add_tanh_sigmoid_multiply(
+                self.in_layers[i](audio),
+                self.cond_layers[i](spect),
+                torch.IntTensor([self.n_channels]))
 
-            t_act = torch.nn.functional.tanh(in_act[:, :self.n_channels, :])
-            s_act = torch.nn.functional.sigmoid(in_act[:, self.n_channels:, :])
-            acts = t_act * s_act
-
+            res_skip_acts = self.res_skip_layers[i](acts)
             if i < self.n_layers - 1:
-                res_acts = self.res_layers[i](acts)
-                audio = res_acts + audio
+                audio = res_skip_acts[:,:self.n_channels,:] + audio
+                skip_acts = res_skip_acts[:,self.n_channels:,:]
+            else:
+                skip_acts = res_skip_acts
 
             if i == 0:
-                output = self.skip_layers[i](acts)
+                output = skip_acts
             else:
-                output = self.skip_layers[i](acts) + output
+                output = skip_acts + output
         return self.end(output)
 
 
@@ -280,15 +290,16 @@ class WaveGlow(torch.nn.Module):
         audio = audio.permute(0,2,1).contiguous().view(audio.size(0), -1).data
         return audio
 
-    def remove_weightnorm(self):
-        waveglow = copy.deepcopy(self)
+    @staticmethod
+    def remove_weightnorm(model):
+        waveglow = model
         for WN in waveglow.WN:
             WN.start = torch.nn.utils.remove_weight_norm(WN.start)
             WN.in_layers = remove(WN.in_layers)
             WN.cond_layers = remove(WN.cond_layers)
-            WN.res_layers = remove(WN.res_layers)
-            WN.skip_layers = remove(WN.skip_layers)
-        self = waveglow
+            WN.res_skip_layers = remove(WN.res_skip_layers)
+        return waveglow
+
 
 def remove(conv_list):
     new_conv_list = torch.nn.ModuleList()

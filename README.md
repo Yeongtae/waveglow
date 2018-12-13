@@ -4,19 +4,17 @@
 
 ### Ryan Prenger, Rafael Valle, and Bryan Catanzaro
 
-In our recent [paper], we propose WaveGlow: a flow-based network capable
-of generating high quality speech from mel-spectrograms. WaveGlow
-combines insights from [Glow] and [WaveNet] in order to provide fast,
-efficient and high-quality audio synthesis, without the need for
-auto-regression. WaveGlow is implemented using only a single network,
-trained using only a single cost function: maximizing the likelihood of
-the training data, which makes the training procedure simple and
-stable.
+In our recent [paper], we propose WaveGlow: a flow-based network capable of
+generating high quality speech from mel-spectrograms. WaveGlow combines insights
+from [Glow] and [WaveNet] in order to provide fast, efficient and high-quality
+audio synthesis, without the need for auto-regression. WaveGlow is implemented
+using only a single network, trained using only a single cost function:
+maximizing the likelihood of the training data, which makes the training
+procedure simple and stable.
 
-Our [PyTorch] implementation produces audio samples at a rate of more than
-500 kHz on an NVIDIA V100 GPU and Mean Opinion Scores show that it delivers
-audio quality as good as the best publicly available WaveNet
-implementation.
+Our [PyTorch] implementation produces audio samples at a rate of 2750
+kHz on an NVIDIA V100 GPU. Mean Opinion Scores show that it delivers audio
+quality as good as the best publicly available WaveNet implementation.
 
 Visit our [website] for audio samples.
 
@@ -26,17 +24,23 @@ Visit our [website] for audio samples.
 
    ```command
    git clone https://github.com/NVIDIA/waveglow.git
+   cd waveglow
    git submodule init
    git submodule update
    ```
 
-2. Install requirements (same as those from submodule) `pip3 install -r tacotron2/requirements.txt`
+2. Install [PyTorch 1.0]  
+
+3. Install other requirements `pip3 install -r requirements.txt`
 
 ## Generate audio with our pre-existing model
 
 1. Download our [published model]
 2. Download [mel-spectrograms]
-3. Generate audio `python3 inference.py -f <(ls mel_spectrograms/*.pt) -w waveglow_old.pt -o . --is_fp16 -s 0.6`
+3. Generate audio `python3 inference.py -f <(ls mel_spectrograms/*.pt) -w waveglow_old.pt -o . --is_fp16 -s 0.6`  
+
+N.b. use `convert_model.py` to convert your older models to the current model
+with fused residual and skip connections.
 
 ## Train your own model
 
@@ -71,7 +75,7 @@ Visit our [website] for audio samples.
 
 [//]: # (TODO)
 [//]: # (PROVIDE INSTRUCTIONS FOR DOWNLOADING LJS)
-[//]: # (TEST INSTRUCTIONS)
+[pytorch 1.0]: https://github.com/pytorch/pytorch#installation
 [website]: https://nv-adlr.github.io/WaveGlow
 [paper]: https://arxiv.org/abs/1811.00002
 [WaveNet implementation]: https://github.com/r9y9/wavenet_vocoder
