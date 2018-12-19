@@ -94,7 +94,7 @@ def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
         else:
             model, optimizer, iteration = load_checkpoint(checkpoint_path, model,
                                                       optimizer)
-            iteration += 1  # next iteration is iteration + 1
+        iteration += 1  # next iteration is iteration + 1
 
     trainset = Mel2Samp(**data_config)
     # =====START: ADDED FOR DISTRIBUTED======
