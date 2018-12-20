@@ -76,12 +76,13 @@ def run(sigma, sentence_path, taco_cp_path = "", wg_cp_path ="", cleaner='englis
 
     model = load_model(hparams)
     model.load_state_dict(torch.load(taco_cp_path)['state_dict'])
-    _ = model.eval()
+    _ = model.cuda().eval()
     waveglow = torch.load(wg_cp_path)['model']
     waveglow = waveglow.remove_weightnorm(waveglow)
     waveglow.cuda().eval()
 
     if is_fp16:
+        model.half()
         waveglow.half()
         for k in waveglow.convinv:
             k.float()
