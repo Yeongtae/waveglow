@@ -41,16 +41,14 @@ def generate_mels(taco2, sentences, cleaner, output_dir=""):
         plot_data((mel_outputs_postnet.data.cpu().numpy()[0],
                    alignments.data.cpu().numpy()[0].T), i, output_dir)
         inf_time = time.time() - stime
-        str = "{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2))
-        print(str)
+        print("{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2)))
         output_mels.append(mel_outputs_postnet)
 
     return output_mels
 
 def mels_to_wavs_WG(waveglow, mels, sigma, is_fp16, hparams, output_dir=""):
     for i, mel in enumerate(mels):
-        #mel = mel[-1, :, :] # original mel
-        mel = mel[-1, :, :-4]  # mel without padding, padding size is 882, unpadding size is 1024
+        mel = mel[-1, :, :]
         mel = torch.autograd.Variable(mel.cuda())
         mel = torch.unsqueeze(mel, 0)
         mel = mel.half() if is_fp16 else mel
@@ -79,7 +77,7 @@ def run(sigma, sentence_path, taco_cp_path = "", wg_cp_path ="", cleaner='englis
     model.load_state_dict(torch.load(taco_cp_path)['state_dict'])
     _ = model.eval()
     waveglow = torch.load(wg_cp_path)['model']
-    waveglow.remove_weightnorm(waveglow)
+    waveglow.remove_weightnorm()
     waveglow.cuda().eval()
 
     if is_fp16:
