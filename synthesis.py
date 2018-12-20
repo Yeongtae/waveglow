@@ -41,7 +41,8 @@ def generate_mels(taco2, sentences, cleaner, output_dir=""):
         plot_data((mel_outputs_postnet.data.cpu().numpy()[0],
                    alignments.data.cpu().numpy()[0].T), i, output_dir)
         inf_time = time.time() - stime
-        print("{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2)))
+        str = "{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2))
+        print(str)
         output_mels.append(mel_outputs_postnet)
 
     return output_mels
