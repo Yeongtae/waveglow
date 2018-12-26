@@ -43,7 +43,7 @@ def generate_mels(taco2, sentences, cleaner, output_dir=""):
         inf_time = time.time() - stime
         str = "{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2))
         print(str)
-        output_mels.append(mel_outputs_postnet)
+        output_mels.append(mel_outputs_postnet[:,:,:-4])
 
     return output_mels
 
