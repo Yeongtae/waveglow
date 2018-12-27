@@ -134,9 +134,9 @@ class Mel2Samp(torch.utils.data.Dataset):
                 audio = audio[audio_start : audio_start + self.segment_length]
                 mel = mel[:,mel_start:mel_start + max_mel_length]
             else:
-                if self.segment_length - audio.size(0) > self.hop_length:
-                    pad = np.ones((80, int((self.segment_length - audio.size(0)) / self.hop_length)), dtype=np.float32) * -11.512925
-                    mel =  np.append(mel, pad, axis=1)
+                len_pad = int((self.segment_length/ self.hop_length) - mel.shape[1])
+                pad = np.ones((80, len_pad), dtype=np.float32) * -11.512925
+                mel =  np.append(mel, pad, axis=1)
                 audio = torch.nn.functional.pad(audio, (0, self.segment_length - audio.size(0)), 'constant').data
 
             mel = torch.from_numpy(mel).float()
