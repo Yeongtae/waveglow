@@ -43,7 +43,7 @@ def generate_mels(taco2, sentences, cleaner, output_dir=""):
         inf_time = time.time() - stime
         str = "{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2))
         print(str)
-        output_mels.append(mel_outputs_postnet[:,:,:-4])
+        output_mels.append(mel_outputs_postnet[:,:,:-3])
 
     return output_mels
 
@@ -64,11 +64,11 @@ def mels_to_wavs_WG(waveglow, mels, sigma, is_fp16, hparams, output_dir=""):
         print(str)
         write(os.path.join(output_dir, "sentence_{}.wav".format(i)), hparams.sampling_rate, audio)
 
-def run(sigma, sentence_path, taco_cp_path = "", wg_cp_path ="", cleaner='english_cleaners', output_dir='', is_fp16=True):
+def run(sigma, sentence_path, taco_cp_path, wg_cp_path, cleaner='english_cleaners', output_dir='', is_fp16=True):
     hparams = create_hparams()
     hparams.sampling_rate = 22050
     # set 80 if u use korean_cleaners. set 149 if u use english_cleaners
-    hparams.n_symbols = 80 if cleaner == 'korean_cleaners' else 149
+    hparams.n_symbols = 80 if cleaner == 'korean_cleaners' else 148
 
     f = open(sentence_path,'r')
     sentences = [x.strip() for x in f.readlines()]
@@ -93,11 +93,12 @@ def run(sigma, sentence_path, taco_cp_path = "", wg_cp_path ="", cleaner='englis
 
 if __name__ == "__main__":
     import argparse
+    """
+    usage
+    python synthesis.py -t=tacotron2/nam-h-ep8/checkpoint_80000 -w=checkpoints/waveglow_40000 -s=kor_test.txt -c=korean_cleaners --is_fp16
+    python synthesis.py -t=tacotron2/tacotron2_statedict.pt -w=waveglow_old.pt -s=eng_test.txt -c=english_cleaners --is_fp16
+    """
 
-    ## how to run this script?
-    # python synthesis.py -t=tacotron2/model_LJ/checkpoint_15500 -w=checkpoints/waveglow_162000 -c=english_cleaners --is_fp16
-
-    #sigma , taco_cp_path = "tacotron2/tacotron2_statedict.pt", wg_cp_path ="waveglow_old.pt", text = '', cleaner=['english_cleaners'], is_fp16=True
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output_directory', type=str, default='',
                         help='directory to save wave and fig')
@@ -108,6 +109,8 @@ if __name__ == "__main__":
     parser.add_argument('-c', "--cleaner")
     parser.add_argument('-s','--sentence_path', type=str, default=None,
                         required=True, help='sentence path')
+    parser.add_argument('--silence_mel_padding', type=int, default=0,
+                        help='silence audio size is hop_length * silence mel padding')
     parser.add_argument("--sigma", default=1.0, type=float)
     parser.add_argument("--is_fp16", action="store_true")
 
