@@ -126,7 +126,6 @@ class Mel2Samp(torch.utils.data.Dataset):
             audio_ = audio.data.cpu().numpy()
             if(mel.shape[1] > len(audio_)/self.hop_length): #handling error
                 diff = int(mel.shape[1] - len(audio_)/self.hop_length)
-                print(mel.shape[1], len(audio_)/self.hop_length, diff)
                 mel=mel[:,:-diff]
             if(mel.shape[1] < len(audio_)/self.hop_length):
                 print(filename, mel.shape, len(audio))
@@ -136,7 +135,6 @@ class Mel2Samp(torch.utils.data.Dataset):
                 audio_start = mel_start*self.hop_length
                 audio = audio[audio_start : audio_start + self.segment_length]
                 mel = mel[:,mel_start:mel_start + max_mel_length]
-                print(audio_start, mel_start, self.segment_length, max_mel_length)
             else:
                 len_pad = int((self.segment_length/ self.hop_length) - mel.shape[1])
                 pad = np.ones((80, len_pad), dtype=np.float32) * -11.512925
@@ -145,8 +143,8 @@ class Mel2Samp(torch.utils.data.Dataset):
 
             mel = torch.from_numpy(mel).float()
             audio = audio / MAX_WAV_VALUE
-            if(mel.shape[1] != int(self.segment_length/self.hop_length)):
-                print()
+            # if(mel.shape[1] != int(self.segment_length/self.hop_length)):
+            #     print()
         else:
             # Take segment
             if audio.size(0) >= self.segment_length:
