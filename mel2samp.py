@@ -191,33 +191,3 @@ if __name__ == "__main__":
         plot_data([mel1_org, mel1], filename='mel_index{}.png'.format(i))
 
     pass
-
-    # with open("config.json") as f:
-    #     data = f.read()
-    # data_config = json.loads(data)["data_config"]
-    # mel2samp = Mel2Samp(**data_config)
-    #
-    # data_config['training_files'] = 'train_files.txt'
-    # mel2samp2 = Mel2Samp(**data_config)
-    #
-    # filepaths = ['LJ050-0271.wav', 'LJ050-0278.wav']
-    #
-    # for filepath in filepaths:
-    #     audio, sr = load_wav_to_torch(filepath)
-    #     mel1_org = mel2samp.get_mel(audio).data.cpu().numpy()
-    #     mel1_gta = np.load(filepath.replace('wav', 'mel') + '.npy')
-    #     #print(mel1_org[:,675]) #check empty melspectrogram
-    #     basename = os.path.basename(filepath)
-    #     plot_data([mel1_org, mel1_gta], filename=basename + '.png')
-    #     print(len(audio), mel1_org.shape, mel1_org.max(), mel1_org.min(), mel1_gta.shape, mel1_gta.max(), mel1_gta.min())
-
-    ## Slicing debug
-    # slice_index = 30
-    # mel1 = mel2samp.get_mel(audio[slice_index*256:])
-    # gta_melsepctrogram = gta_melsepctrogram[:,slice_index:]
-    # basename = os.path.basename(filepath)
-    # print(mel1.data.cpu().numpy().shape)
-    # print(gta_melsepctrogram.shape)
-    # plot_data([mel1, gta_melsepctrogram], filename=basename + '_slice.png')
-
-    #assert n >= 0.0, 'Data should only contain positive values'
