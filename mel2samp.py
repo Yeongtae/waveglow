@@ -33,6 +33,7 @@ import sys
 import numpy as np
 import random
 from scipy.io.wavfile import read
+import librosa
 
 # We're using the audio processing from TacoTron2 to make sure it matches
 sys.path.insert(0, 'tacotron2')
@@ -125,14 +126,17 @@ class Mel2Samp(torch.utils.data.Dataset):
             audio_ = audio.data.cpu().numpy()
             if(mel.shape[1] > len(audio_)/self.hop_length): #handling error
                 diff = int(mel.shape[1] - len(audio_)/self.hop_length)
+                print(mel.shape[1], len(audio_)/self.hop_length, diff)
                 mel=mel[:,:-diff]
             if(mel.shape[1] < len(audio_)/self.hop_length):
                 print(filename, mel.shape, len(audio))
             if audio.size(0) >= self.segment_length:
-                mel_start = int((audio.size(0)-self.segment_length)/self.hop_length) # audio.size(0)%self.hop_length is the remainder
-                audio_start = random.randint(0, mel_start)*self.hop_length
+                max_mel_start = int((audio.size(0)-self.segment_length)/self.hop_length) # audio.size(0)%self.hop_length is the remainder
+                mel_start = random.randint(0, max_mel_start)
+                audio_start = mel_start*self.hop_length
                 audio = audio[audio_start : audio_start + self.segment_length]
                 mel = mel[:,mel_start:mel_start + max_mel_length]
+                print(audio_start, mel_start, self.segment_length, max_mel_length)
             else:
                 len_pad = int((self.segment_length/ self.hop_length) - mel.shape[1])
                 pad = np.ones((80, len_pad), dtype=np.float32) * -11.512925
@@ -141,6 +145,8 @@ class Mel2Samp(torch.utils.data.Dataset):
 
             mel = torch.from_numpy(mel).float()
             audio = audio / MAX_WAV_VALUE
+            if(mel.shape[1] != int(self.segment_length/self.hop_length)):
+                print()
         else:
             # Take segment
             if audio.size(0) >= self.segment_length:
@@ -166,7 +172,7 @@ if __name__ == "__main__":
         data = f.read()
     data_config = json.loads(data)["data_config"]
     # original mel_audio loader
-    mel2samp = Mel2Samp(**data_config)
+    #mel2samp = Mel2Samp(**data_config)
 
     # GTA mel_audio loader
     data_config['training_files'] = 'audio_mel_train.txt'
@@ -174,27 +180,38 @@ if __name__ == "__main__":
     data_config['segment_length'] = 16128
     mel2samp2 = Mel2Samp(**data_config)
 
-    # for testing orginal mel_audio loader
-    mel1 , audio1_norm = mel2samp.__getitem__(0)
-    mel1_org = mel2samp.get_mel(audio1_norm*MAX_WAV_VALUE)
-    mel1, mel1_org = mel1.data.cpu().numpy(), mel1_org.data.cpu().numpy()
-    print(len(audio1_norm), mel1_org.shape, mel1_org.max(), mel1_org.min(), mel1.shape, mel1.max(), mel1.min())
-    plot_data([mel1_org, mel1], filename='mel1.png')
+    for i in range(5):
+        data, sr = load_wav_to_torch('000000{}.wav'.format(i))
+        mel_gta = np.load('000000{}.mel.npy'.format(i))
+        mel_org = mel2samp2.get_mel(data)
+        plot_data([mel_org, mel_gta], filename='mel_match{}.png'.format(i))
+        mel1, audio1_norm = mel2samp2.__getitem__(i)
+        mel1_org = mel2samp2.get_mel(audio1_norm*MAX_WAV_VALUE)
+        mel1, mel1_org = mel1.data.cpu().numpy(), mel1_org.data.cpu().numpy()
+        print(len(audio1_norm), mel1_org.shape, mel1_org.max(), mel1_org.min(), mel1.shape, mel1.max(), mel1.min())
+        plot_data([mel1_org, mel1], filename='mel_index{}.png'.format(i))
 
-    # for testing GTA mel_audio loader
-    mel2, audio2_norm = mel2samp2.__getitem__(1)
-    mel2, audio2_norm = mel2samp2.__getitem__(1)
-    mel2_org = mel2samp2.get_mel(audio2_norm * MAX_WAV_VALUE)
-    mel2, mel2_org =  mel2.data.cpu().numpy(), mel2_org.data.cpu().numpy()
-    print(len(audio2_norm), mel2_org.shape, mel2_org.max(), mel2_org.min(), mel2.shape, mel2.max(), mel2.min())
-    plot_data([mel2_org, mel2], filename='mel2.png')
-
-    # for testing GTA mel_audio loader and padding
-    mel3, audio3_norm = mel2samp2.__getitem__(0)
-    mel3_org = mel2samp2.get_mel(audio3_norm * MAX_WAV_VALUE)
-    mel3, mel3_org = mel3.data.cpu().numpy(), mel3_org.data.cpu().numpy()
-    print(len(audio3_norm), mel3_org.shape, mel3_org.max(), mel3_org.min(), mel3.shape, mel3.max(), mel3.min())
-    plot_data([mel3_org, mel3], filename='mel3.png')
+    # # for testing orginal mel_audio loader
+    # mel1 , audio1_norm = mel2samp.__getitem__(0)
+    # mel1_org = mel2samp.get_mel(audio1_norm*MAX_WAV_VALUE)
+    # mel1, mel1_org = mel1.data.cpu().numpy(), mel1_org.data.cpu().numpy()
+    # print(len(audio1_norm), mel1_org.shape, mel1_org.max(), mel1_org.min(), mel1.shape, mel1.max(), mel1.min())
+    # plot_data([mel1_org, mel1], filename='mel1.png')
+    #
+    # # for testing GTA mel_audio loader
+    # mel2, audio2_norm = mel2samp2.__getitem__(1)
+    # mel2, audio2_norm = mel2samp2.__getitem__(1)
+    # mel2_org = mel2samp2.get_mel(audio2_norm * MAX_WAV_VALUE)
+    # mel2, mel2_org =  mel2.data.cpu().numpy(), mel2_org.data.cpu().numpy()
+    # print(len(audio2_norm), mel2_org.shape, mel2_org.max(), mel2_org.min(), mel2.shape, mel2.max(), mel2.min())
+    # plot_data([mel2_org, mel2], filename='mel2.png')
+    #
+    # # for testing GTA mel_audio loader and padding
+    # mel3, audio3_norm = mel2samp2.__getitem__(0)
+    # mel3_org = mel2samp2.get_mel(audio3_norm * MAX_WAV_VALUE)
+    # mel3, mel3_org = mel3.data.cpu().numpy(), mel3_org.data.cpu().numpy()
+    # print(len(audio3_norm), mel3_org.shape, mel3_org.max(), mel3_org.min(), mel3.shape, mel3.max(), mel3.min())
+    # plot_data([mel3_org, mel3], filename='mel3.png')
 
     pass
 
