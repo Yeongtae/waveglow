@@ -132,7 +132,7 @@ def train(num_gpus, rank, group_name, output_directory, epochs, learning_rate,
             else:
                 reduced_loss = loss.item()
             loss.backward()
-            grad_norm = torch.nn.utils.clip_grad_norm(model.parameters(), 1)
+            grad_norm = torch.nn.utils.clip_grad_norm(model.parameters(), 0.01)
             optimizer.step()
 
             print("{}:\t{:.9f}".format(iteration, reduced_loss))
