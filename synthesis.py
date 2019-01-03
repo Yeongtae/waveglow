@@ -70,6 +70,7 @@ def run(sigma, sentence_path, taco_cp_path, wg_cp_path, cleaner='english_cleaner
     hparams.sampling_rate = 22050
     # set 80 if u use korean_cleaners. set 149 if u use english_cleaners
     hparams.n_symbols = 80 if cleaner == 'korean_cleaners' else 148
+    hparams.text_cleaners = [cleaner]
 
     f = open(sentence_path,'r')
     sentences = [x.strip() for x in f.readlines()]
