@@ -30,7 +30,7 @@ def plot_data(data, index, output_dir="", figsize=(16, 4)):
                         interpolation='none')
     plt.savefig(os.path.join(output_dir, 'sentence_{}.png'.format(index)))
 
-def generate_mels(taco2, sentences, cleaner, is_fp16, output_dir=""):
+def generate_mels(taco2, sentences, cleaner, output_dir=""):
     output_mels = []
     for i, s in enumerate(sentences):
         sequence = np.array(text_to_sequence(s, [cleaner]))[None, :]
@@ -88,7 +88,7 @@ def run(sigma, sentence_path, taco_cp_path, wg_cp_path, cleaner='english_cleaner
         for k in waveglow.convinv:
             k.float()
 
-    mel_outputs = generate_mels(model, sentences, cleaner, is_fp16, output_dir)
+    mel_outputs = generate_mels(model, sentences, cleaner, output_dir)
     mels_to_wavs_WG(waveglow, mel_outputs, sigma, is_fp16, hparams, output_dir)
 
 
