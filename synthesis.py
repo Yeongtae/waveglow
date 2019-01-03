@@ -28,7 +28,8 @@ def plot_data(data, index, output_dir="", figsize=(16, 4)):
     for i in range(len(data)):
         axes[i].imshow(data[i], aspect='auto', origin='bottom',
                         interpolation='none')
-    plt.savefig(os.path.join(output_dir, 'sentence_{}.png'.format(index)))
+    #plt.savefig(os.path.join(output_dir, 'sentence_{}.png'.format(index)))
+    plt.savefig(output_dir + 'sentence_{}.png'.format(index))
 
 def generate_mels(taco2, sentences, cleaner, output_dir=""):
     output_mels = []
@@ -62,7 +63,8 @@ def mels_to_wavs_WG(waveglow, mels, sigma, is_fp16, hparams, output_dir=""):
         len_audio = float(len(audio)) / float(hparams.sampling_rate)
         str = "sentence num_{}, audio length: {:.2f} sec,  waveglow inference time: {:.2f}".format(i, len_audio, inf_time)
         print(str)
-        write(os.path.join(output_dir, "sentence_{}.wav".format(i)), hparams.sampling_rate, audio)
+        write(output_dir + "sentence_{}.wav".format(i), hparams.sampling_rate, audio)
+        #write(os.path.join(output_dir, "sentence_{}.wav".format(i)), hparams.sampling_rate, audio)
 
 def run(sigma, sentence_path, taco_cp_path, wg_cp_path, cleaner='english_cleaners', output_dir='', is_fp16=True):
     hparams = create_hparams()
