@@ -43,7 +43,7 @@ def generate_mels(taco2, sentences, cleaner, is_fp16, output_dir=""):
         # plot_data((mel_outputs_postnet.data.cpu().numpy()[0],
         #            alignments.data.cpu().numpy()[0].T), i, output_dir)
         inf_time = time.time() - stime
-        str = "{}th sentence, tacotron Infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2))
+        str = "sentence num_{}, tacotron infenrece time: {:.2f}s, len_mel: {}".format(i, inf_time, mel_outputs_postnet.size(2))
         print(str)
         output_mels.append(mel_outputs_postnet[:,:,:-3])
 
@@ -62,7 +62,7 @@ def mels_to_wavs_WG(waveglow, mels, sigma, is_fp16, hparams, output_dir=""):
         inf_time = time.time() - stime
         audio = audio.data.cpu().numpy().astype('int16')
         len_audio = float(len(audio)) / float(hparams.sampling_rate)
-        str = "{}th sentence, audio length: {:.2f} sec,  waveglow inf time: {:.2f}".format(i, len_audio, inf_time)
+        str = "sentence num_{}, audio length: {:.2f} sec,  waveglow inference time: {:.2f}".format(i, len_audio, inf_time)
         print(str)
         write(os.path.join(output_dir, "sentence_{}.wav".format(i)), hparams.sampling_rate, audio)
 
