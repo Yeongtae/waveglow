@@ -30,11 +30,13 @@ def plot_data(data, index, output_dir="", figsize=(16, 4)):
                         interpolation='none')
     plt.savefig(os.path.join(output_dir, 'sentence_{}.png'.format(index)))
 
-def generate_mels(taco2, sentences, cleaner, output_dir=""):
+def generate_mels(taco2, sentences, cleaner, is_fp16, output_dir=""):
     output_mels = []
     for i, s in enumerate(sentences):
         sequence = np.array(text_to_sequence(s, [cleaner]))[None, :]
         sequence = torch.autograd.Variable(torch.from_numpy(sequence)).cuda().long()
+        if is_fp16:
+            sequence = sequence.half()
 
         stime = time.time()
         _, mel_outputs_postnet, _, alignments = taco2.inference(sequence)
