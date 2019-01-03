@@ -17,6 +17,7 @@ import torch
 
 from hparams import create_hparams
 from model import Tacotron2
+from model_old import Tacotron2_old
 from layers import TacotronSTFT
 from audio_processing import griffin_lim
 from train import load_model
