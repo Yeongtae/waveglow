@@ -1,3 +1,4 @@
 [submodule "tacotron2"]
 	path = tacotron2
 	url = http://github.com/Yeongtae/tacotron2
+    branch = master
