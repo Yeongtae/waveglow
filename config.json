@@ -1,11 +1,11 @@
 {
     "train_config": {
         "output_directory": "checkpoints",
-        "epochs": 100000,
+        "epochs": 870,
         "learning_rate": 1e-4,
         "sigma": 1.0,
         "iters_per_checkpoint": 10000,
-        "batch_size": 3,
+        "batch_size": 10,
         "seed": 1234,
         "checkpoint_path": "waveglow_old.pt",
         "warm_start": true
@@ -34,7 +34,7 @@
         "n_early_size": 2,
         "WN_config": {
             "n_layers": 8,
-            "n_channels": 512,
+            "n_channels": 256,
             "kernel_size": 3
         }
     }
